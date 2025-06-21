@@ -13,7 +13,18 @@
     }
     .prompt {
       font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .word-display {
+      font-size: 32px;
       margin-bottom: 20px;
+    }
+    .word-display span.first-letter {
+      font-weight: bold;
+      color: black;
+    }
+    .word-display span.first-letter.incorrect {
+      color: red;
     }
     img#image {
       width: 200px;
@@ -42,6 +53,7 @@
 </head>
 <body>
   <div class="prompt">What letter does this word begin with?</div>
+  <div class="word-display" id="wordDisplay"></div>
   <img id="image" src="" alt="Word image" />
   <input type="text" id="answer" maxlength="1" autofocus />
   <div class="feedback" id="feedback"></div>
@@ -81,31 +93,42 @@
     const feedback = document.getElementById("feedback");
     const answer = document.getElementById("answer");
     const symbolOutput = document.getElementById("symbol");
+    const wordDisplay = document.getElementById("wordDisplay");
+
+    function updateWordDisplay(word, incorrect = false) {
+      const first = word.charAt(0);
+      const rest = word.slice(1);
+      wordDisplay.innerHTML = `<span class="first-letter${incorrect ? ' incorrect' : ''}">${first}</span>${rest}`;
+    }
 
     function loadWord(index) {
       if (index >= validWordList.length) return;
 
+      const currentWord = validWordList[index].word;
+      updateWordDisplay(currentWord);
       image.src = validWordList[index].image;
-      image.alt = `Image for ${validWordList[index].word}`;
+      image.alt = `Image for ${currentWord}`;
       answer.value = "";
       feedback.textContent = "";
       symbolOutput.textContent = "";
-      console.log(`Loading word: ${validWordList[index].word}`);
+      console.log(`Loading word: ${currentWord}`);
     }
 
     answer.addEventListener("input", () => {
       const correct = validWordList[current].letter.toLowerCase();
       const typed = answer.value.toLowerCase();
+      const word = validWordList[current].word;
       console.log(`User typed: ${typed}, expected: ${correct}`);
       if (typed === correct) {
         feedback.textContent = "✅ Well done!";
-        symbolOutput.textContent = validWordList[current].symbol + " = " + validWordList[current].word;
+        symbolOutput.textContent = validWordList[current].symbol + " = " + word;
         setTimeout(() => {
           current = (current + 1) % validWordList.length;
           loadWord(current);
         }, 1500);
       } else {
         feedback.textContent = "❌ Try again";
+        updateWordDisplay(word, true);
       }
     });
 
