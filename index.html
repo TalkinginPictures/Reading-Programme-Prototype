@@ -22,14 +22,23 @@
       font-size: 14px;
     }
     .word-display {
-      font-size: 32px;
       margin-bottom: 10px;
     }
-    .word-display span.first-letter {
+    .word-display .uppercase-word {
+      font-size: 36px;
       font-weight: bold;
-      color: black;
     }
-    .word-display span.first-letter.incorrect {
+    .word-display .lowercase-word {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .initial-letter {
+      font-size: 80px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .initial-letter.incorrect {
       color: red;
     }
     img#image {
@@ -77,7 +86,11 @@
   </div>
 
   <!-- Main Content -->
-  <div class="word-display" id="wordDisplay"></div>
+  <div class="word-display" id="wordDisplay">
+    <div class="uppercase-word"></div>
+    <div class="lowercase-word"></div>
+  </div>
+  <div class="initial-letter" id="initialLetter"></div>
   <img id="image" src="" alt="Word image" />
   <div class="prompt" id="prompt">&nbsp;</div>
   <input type="text" id="answer" maxlength="1" autofocus autocomplete="off" />
@@ -85,33 +98,69 @@
   <div class="symbol-output" id="symbol"></div>
 
   <script>
-    let wordList = [
-      { word: "apple", letter: "a", symbol: "🍎" },
-      { word: "dog", letter: "d", symbol: "🐶" },
-      { word: "ball", letter: "b", symbol: "⚽" },
-      { word: "cat", letter: "c", symbol: "🐱" },
-      { word: "sun", letter: "s", symbol: "☀️" },
-      { word: "fish", letter: "f", symbol: "🐟" },
-      { word: "tree", letter: "t", symbol: "🌳" },
-      { word: "heart", letter: "h", symbol: "❤️" },
-      { word: "star", letter: "s", symbol: "⭐" }
+    async function fetchARASAAC(word) {
+      const url = `https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(word)}`;
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.length) return `https://static.arasaac.org/pictograms/${data[0]._id}/${data[0]._id}_300.png`;
+      } catch (e) { console.warn(e); }
+      return null;
+    }
+
+    // Define two alphabet sets
+    const wordSet1 = [
+      { word: "apple", letter: "a", symbol: "🍎" },{ word: "ball", letter: "b", symbol: "⚽" },
+      { word: "cat", letter: "c", symbol: "🐱" },{ word: "dog", letter: "d", symbol: "🐶" },
+      { word: "egg", letter: "e", symbol: "🥚" },{ word: "fish", letter: "f", symbol: "🐟" },
+      { word: "goat", letter: "g", symbol: "🐐" },{ word: "hat", letter: "h", symbol: "🎩" },
+      { word: "ice", letter: "i", symbol: "🧊" },{ word: "jug", letter: "j", symbol: "🫖" },
+      { word: "kite", letter: "k", symbol: "🪁" },{ word: "lion", letter: "l", symbol: "🦁" },
+      { word: "moon", letter: "m", symbol: "🌙" },{ word: "nest", letter: "n", symbol: "🪹" },
+      { word: "owl", letter: "o", symbol: "🦉" },{ word: "pig", letter: "p", symbol: "🐖" },
+      { word: "queen", letter: "q", symbol: "👸" },{ word: "rat", letter: "r", symbol: "🐀" },
+      { word: "sun", letter: "s", symbol: "☀️" },{ word: "tree", letter: "t", symbol: "🌳" },
+      { word: "umbrella", letter: "u", symbol: "☂️" },{ word: "vase", letter: "v", symbol: "🏺" },
+      { word: "wolf", letter: "w", symbol: "🐺" },{ word: "xray", letter: "x", symbol: "🩻" },
+      { word: "yak", letter: "y", symbol: "🐂" },{ word: "zebra", letter: "z", symbol: "🦓" }
     ];
+    const wordSet2 = [
+      { word: "ant", letter: "a", symbol: "🐜" },{ word: "book", letter: "b", symbol: "📚" },
+      { word: "car", letter: "c", symbol: "🚗" },{ word: "door", letter: "d", symbol: "🚪" },
+      { word: "ear", letter: "e", symbol: "👂" },{ word: "frog", letter: "f", symbol: "🐸" },
+      { word: "grape", letter: "g", symbol: "🍇" },{ word: "hill", letter: "h", symbol: "⛰️" },
+      { word: "ink", letter: "i", symbol: "🖋️" },{ word: "jam", letter: "j", symbol: "🍯" },
+      { word: "key", letter: "k", symbol: "🔑" },{ word: "leaf", letter: "l", symbol: "🍃" },
+      { word: "milk", letter: "m", symbol: "🥛" },{ word: "net", letter: "n", symbol: "🕸️" },
+      { word: "orange", letter: "o", symbol: "🍊" },{ word: "pen", letter: "p", symbol: "🖊️" },
+      { word: "quilt", letter: "q", symbol: "🛏️" },{ word: "rose", letter: "r", symbol: "🌹" },
+      { word: "star", letter: "s", symbol: "⭐" },{ word: "table", letter: "t", symbol: "🛋️" },
+      { word: "urn", letter: "u", symbol: "🏺" },{ word: "violin", letter: "v", symbol: "🎻" },
+      { word: "window", letter: "w", symbol: "🪟" },{ word: "xylophone", letter: "x", symbol: "🎼" },
+      { word: "yarn", letter: "y", symbol: "🧶" },{ word: "zipper", letter: "z", symbol: "🧷" }
+    ];
+    const combinedList = [...wordSet1, ...wordSet2];
 
     const validWordList = [];
     let current = 0;
 
-    const image = document.getElementById("image");
-    const feedback = document.getElementById("feedback");
-    const answer = document.getElementById("answer");
-    const symbolOutput = document.getElementById("symbol");
-    const wordDisplay = document.getElementById("wordDisplay");
-    const prompt = document.getElementById("prompt");
+    const imageEl = document.getElementById("image");
+    const feedbackEl = document.getElementById("feedback");
+    const answerEl = document.getElementById("answer");
+    const symbolEl = document.getElementById("symbol");
+    const wordDisplayEl = document.getElementById("wordDisplay");
+    const uppercaseEl = wordDisplayEl.querySelector(".uppercase-word");
+    const lowercaseEl = wordDisplayEl.querySelector(".lowercase-word");
+    const initialEl = document.getElementById("initialLetter");
+    const promptEl = document.getElementById("prompt");
     const speechToggle = document.getElementById("speechToggle");
 
-    function updateWordDisplay(word, incorrect = false) {
-      const first = word.charAt(0);
-      const rest = word.slice(1);
-      wordDisplay.innerHTML = `<span class="first-letter${incorrect ? ' incorrect' : ''}">${first}</span>${rest}`;
+    function updateDisplays(word, incorrect = false) {
+      uppercaseEl.textContent = word.toUpperCase();
+      lowercaseEl.textContent = word.toLowerCase();
+      const letter = word.charAt(0).toUpperCase();
+      initialEl.textContent = letter;
+      initialEl.className = incorrect ? 'initial-letter incorrect' : 'initial-letter';
     }
 
     function speakPrompt(word) {
@@ -123,65 +172,48 @@
 
     function loadWord(index) {
       if (index >= validWordList.length) return;
-      const currentWord = validWordList[index].word;
-      updateWordDisplay(currentWord);
-      image.src = validWordList[index].image;
-      image.alt = `Image for ${currentWord}`;
-      answer.value = "";
-      feedback.textContent = "";
-      symbolOutput.textContent = "";
-      prompt.textContent = `What letter does ${currentWord.toUpperCase()} begin with?`;
-      console.log(`Loading word: ${currentWord}`);
-      speakPrompt(currentWord);
+      const { word } = validWordList[index];
+      updateDisplays(word);
+      imageEl.src = validWordList[index].image;
+      feedbackEl.textContent = "";
+      symbolEl.textContent = "";
+      promptEl.textContent = `What letter does ${word.toUpperCase()} begin with?`;
+      answerEl.value = "";
+      console.log("Loading word:", word);
+      speakPrompt(word);
     }
 
-    answer.addEventListener("input", () => {
-      const correct = validWordList[current].letter.toLowerCase();
-      const typed = answer.value.toLowerCase();
-      const word = validWordList[current].word;
-      if (typed === correct) {
-        feedback.textContent = "✅ Well done!";
-        symbolOutput.textContent = validWordList[current].symbol + " = " + word;
+    answerEl.addEventListener("input", () => {
+      const entry = validWordList[current];
+      const typed = answerEl.value.toLowerCase();
+      if (typed === entry.letter) {
+        feedbackEl.textContent = "✅ Well done!";
+        symbolEl.textContent = entry.symbol + " = " + entry.word;
         setTimeout(() => {
           current = (current + 1) % validWordList.length;
           loadWord(current);
         }, 1500);
       } else {
-        feedback.textContent = "❌ Try again";
-        updateWordDisplay(word, true);
+        feedbackEl.textContent = "❌ Try again";
+        updateDisplays(entry.word, true);
       }
     });
 
-    async function fetchARASAAC(word) {
-      const url = `https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(word)}`;
-      try {
-        const resp = await fetch(url);
-        const data = await resp.json();
-        if (data.length) return `https://static.arasaac.org/pictograms/${data[0]._id}/${data[0]._id}_300.png`;
-      } catch (e) { console.warn(e); }
-      return null;
-    }
-
-    async function preloadImages(index = 0) {
-      if (index >= wordList.length) {
-        if (validWordList.length) loadWord(current);
-        else feedback.textContent = "⚠️ No valid images available.";
-        return;
+    async function preload() {
+      for (const item of combinedList) {
+        const url = await fetchARASAAC(item.word);
+        if (url) {
+          const img = new Image();
+          img.onload = () => validWordList.push({ ...item, image: url });
+          img.onerror = () => {};
+          img.src = url;
+        }
       }
-      const { word, letter, symbol } = wordList[index];
-      const url = await fetchARASAAC(word);
-      if (url) {
-        const img = new Image();
-        img.onload = () => {
-          validWordList.push({ word, letter, symbol, image: url });
-          preloadImages(index + 1);
-        };
-        img.onerror = () => preloadImages(index + 1);
-        img.src = url;
-      } else preloadImages(index + 1);
+      if (validWordList.length) loadWord(0);
+      else feedbackEl.textContent = "⚠️ No images loaded.";
     }
 
-    preloadImages();
+    preload();
   </script>
 </body>
 </html>
