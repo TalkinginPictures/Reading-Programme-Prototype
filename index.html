@@ -16,8 +16,17 @@
       margin-bottom: 10px;
     }
     .word-display {
-      font-size: 32px;
       margin-bottom: 20px;
+    }
+    .word-display .uppercase-word {
+      font-size: 48px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+    .word-display .lowercase-word {
+      font-size: 24px;
+      color: #666;
+      margin-top: 5px;
     }
     .word-display span.first-letter {
       font-weight: bold;
@@ -52,8 +61,11 @@
   </style>
 </head>
 <body>
-  <div class="prompt">What letter does this word begin with?</div>
-  <div class="word-display" id="wordDisplay"></div>
+  <div class="prompt" id="prompt">What letter does this word begin with?</div>
+  <div class="word-display" id="wordDisplay">
+    <div class="uppercase-word"></div>
+    <div class="lowercase-word"></div>
+  </div>
   <img id="image" src="" alt="Word image" />
   <input type="text" id="answer" maxlength="1" autofocus />
   <div class="feedback" id="feedback"></div>
@@ -94,11 +106,22 @@
     const answer = document.getElementById("answer");
     const symbolOutput = document.getElementById("symbol");
     const wordDisplay = document.getElementById("wordDisplay");
+    const prompt = document.getElementById("prompt");
+    const uppercaseWordDiv = wordDisplay.querySelector(".uppercase-word");
+    const lowercaseWordDiv = wordDisplay.querySelector(".lowercase-word");
 
     function updateWordDisplay(word, incorrect = false) {
       const first = word.charAt(0);
       const rest = word.slice(1);
-      wordDisplay.innerHTML = `<span class="first-letter${incorrect ? ' incorrect' : ''}">${first}</span>${rest}`;
+      // For error, first letter red else black
+      uppercaseWordDiv.innerHTML = `<span class="first-letter${incorrect ? ' incorrect' : ''}">${first.toUpperCase()}</span>${rest.toUpperCase()}`;
+      lowercaseWordDiv.textContent = word.toLowerCase();
+    }
+
+    function speakPrompt(word) {
+      const utterance = new SpeechSynthesisUtterance(`What letter does ${word.toUpperCase()} begin with?`);
+      window.speechSynthesis.cancel(); // cancel any ongoing speech
+      window.speechSynthesis.speak(utterance);
     }
 
     function loadWord(index) {
@@ -111,7 +134,11 @@
       answer.value = "";
       feedback.textContent = "";
       symbolOutput.textContent = "";
+      prompt.textContent = "What letter does this word begin with?";
       console.log(`Loading word: ${currentWord}`);
+
+      // Speak the prompt aloud
+      speakPrompt(currentWord);
     }
 
     answer.addEventListener("input", () => {
