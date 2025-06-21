@@ -79,7 +79,7 @@
   <!-- Main Content -->
   <div class="word-display" id="wordDisplay"></div>
   <img id="image" src="" alt="Word image" />
-  <div class="prompt" id="prompt">What letter does this word begin with?</div>
+  <div class="prompt" id="prompt">&nbsp;</div>
   <input type="text" id="answer" maxlength="1" autofocus autocomplete="off" />
   <div class="feedback" id="feedback"></div>
   <div class="symbol-output" id="symbol"></div>
@@ -130,7 +130,7 @@
       answer.value = "";
       feedback.textContent = "";
       symbolOutput.textContent = "";
-      prompt.textContent = "What letter does this word begin with?";
+      prompt.textContent = `What letter does ${currentWord.toUpperCase()} begin with?`;
       console.log(`Loading word: ${currentWord}`);
       speakPrompt(currentWord);
     }
