@@ -47,40 +47,41 @@
   <div class="symbol-output" id="symbol"></div>
 
   <script>
-    const wordList = [
+    let wordList = [
       { word: "apple", image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg", letter: "a", symbol: "🍎" },
       { word: "dog", image: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Golde33443.jpg", letter: "d", symbol: "🐶" },
       { word: "ball", image: "https://upload.wikimedia.org/wikipedia/commons/8/89/Soccer_ball.svg", letter: "b", symbol: "⚽" }
     ];
 
+    const testImage = new Image();
+    const validWordList = [];
     let current = 0;
+
     const image = document.getElementById("image");
     const feedback = document.getElementById("feedback");
     const answer = document.getElementById("answer");
     const symbolOutput = document.getElementById("symbol");
 
     function loadWord(index) {
-      image.src = wordList[index].image;
-      image.alt = `Image for ${wordList[index].word}`;
-      image.onerror = () => {
-        image.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png";
-        feedback.textContent = "⚠️ Image not available for this word.";
-      };
+      if (index >= validWordList.length) return;
+
+      image.src = validWordList[index].image;
+      image.alt = `Image for ${validWordList[index].word}`;
       answer.value = "";
       feedback.textContent = "";
       symbolOutput.textContent = "";
-      console.log(`Loading word: ${wordList[index].word}`);
+      console.log(`Loading word: ${validWordList[index].word}`);
     }
 
     answer.addEventListener("input", () => {
-      const correct = wordList[current].letter.toLowerCase();
+      const correct = validWordList[current].letter.toLowerCase();
       const typed = answer.value.toLowerCase();
       console.log(`User typed: ${typed}, expected: ${correct}`);
       if (typed === correct) {
         feedback.textContent = "✅ Well done!";
-        symbolOutput.textContent = wordList[current].symbol + " = " + wordList[current].word;
+        symbolOutput.textContent = validWordList[current].symbol + " = " + validWordList[current].word;
         setTimeout(() => {
-          current = (current + 1) % wordList.length;
+          current = (current + 1) % validWordList.length;
           loadWord(current);
         }, 1500);
       } else {
@@ -88,8 +89,30 @@
       }
     });
 
-    loadWord(current);
+    // Validate image URLs before adding to the usable list
+    function preloadImages(index = 0) {
+      if (index >= wordList.length) {
+        if (validWordList.length === 0) {
+          feedback.textContent = "⚠️ No valid images available.";
+        } else {
+          loadWord(current);
+        }
+        return;
+      }
+
+      const tempImage = new Image();
+      tempImage.onload = () => {
+        validWordList.push(wordList[index]);
+        preloadImages(index + 1);
+      };
+      tempImage.onerror = () => {
+        console.warn(`Image not loaded: ${wordList[index].word}`);
+        preloadImages(index + 1);
+      };
+      tempImage.src = wordList[index].image;
+    }
+
+    preloadImages();
   </script>
 </body>
 </html>
-
