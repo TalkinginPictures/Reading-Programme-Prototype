@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read & Type - Phase 1</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f9;
+      padding: 20px;
+      text-align: center;
+    }
+    .prompt {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .image-box {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 20px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    input[type="text"] {
+      font-size: 24px;
+      padding: 10px;
+      width: 100px;
+      text-align: center;
+    }
+    .feedback {
+      font-size: 20px;
+      margin-top: 20px;
+      height: 30px;
+    }
+    .symbol-output {
+      margin-top: 20px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="prompt">What letter does this word begin with?</div>
+  <div class="image-box" id="image"></div>
+  <input type="text" id="answer" maxlength="1" autofocus />
+  <div class="feedback" id="feedback"></div>
+  <div class="symbol-output" id="symbol"></div>
+
+  <script>
+    const wordList = [
+      { word: "apple", image: "https://cdn.pixabay.com/photo/2016/02/23/17/37/apple-1216340_1280.png", letter: "a", symbol: "🍎" },
+      { word: "dog", image: "https://cdn.pixabay.com/photo/2016/02/19/11/53/dog-1207816_1280.jpg", letter: "d", symbol: "🐶" },
+      { word: "ball", image: "https://cdn.pixabay.com/photo/2016/03/31/19/57/football-1297622_1280.png", letter: "b", symbol: "⚽" }
+    ];
+
+    let current = 0;
+    const image = document.getElementById("image");
+    const feedback = document.getElementById("feedback");
+    const answer = document.getElementById("answer");
+    const symbolOutput = document.getElementById("symbol");
+
+    function loadWord(index) {
+      image.style.backgroundImage = `url(${wordList[index].image})`;
+      answer.value = "";
+      feedback.textContent = "";
+      symbolOutput.textContent = "";
+    }
+
+    answer.addEventListener("input", () => {
+      const correct = wordList[current].letter.toLowerCase();
+      if (answer.value.toLowerCase() === correct) {
+        feedback.textContent = "✅ Well done!";
+        symbolOutput.textContent = wordList[current].symbol + " = " + wordList[current].word;
+        setTimeout(() => {
+          current = (current + 1) % wordList.length;
+          loadWord(current);
+        }, 1500);
+      } else {
+        feedback.textContent = "❌ Try again";
+      }
+    });
+
+    loadWord(current);
+  </script>
+</body>
+</html>
