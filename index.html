@@ -15,13 +15,11 @@
       font-size: 24px;
       margin-bottom: 20px;
     }
-    .image-box {
-      width: 150px;
-      height: 150px;
-      margin: 0 auto 20px;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
+    img#image {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 20px;
+      object-fit: contain;
     }
     input[type="text"] {
       font-size: 24px;
@@ -42,7 +40,7 @@
 </head>
 <body>
   <div class="prompt">What letter does this word begin with?</div>
-  <div class="image-box" id="image"></div>
+  <img id="image" src="" alt="Word image" />
   <input type="text" id="answer" maxlength="1" autofocus />
   <div class="feedback" id="feedback"></div>
   <div class="symbol-output" id="symbol"></div>
@@ -61,7 +59,7 @@
     const symbolOutput = document.getElementById("symbol");
 
     function loadWord(index) {
-      image.style.backgroundImage = `url(${wordList[index].image})`;
+      image.src = wordList[index].image;
       answer.value = "";
       feedback.textContent = "";
       symbolOutput.textContent = "";
