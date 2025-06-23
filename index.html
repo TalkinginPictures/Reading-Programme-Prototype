@@ -92,8 +92,36 @@
   <div class="symbol-output" id="symbol"></div>
 
   <script>
-    const wordSet1 = [...]; // add actual words here
-    const wordSet2 = [...];
+    const wordSet1 = [
+      { word: "apple", letter: "a", symbol: "🍎" },
+      { word: "ball", letter: "b", symbol: "🏀" },
+      { word: "cat", letter: "c", symbol: "🐱" },
+      { word: "dog", letter: "d", symbol: "🐶" },
+      { word: "egg", letter: "e", symbol: "🥚" },
+      { word: "fish", letter: "f", symbol: "🐟" },
+      { word: "goat", letter: "g", symbol: "🐐" },
+      { word: "hat", letter: "h", symbol: "🎩" },
+      { word: "ice", letter: "i", symbol: "🧊" },
+      { word: "juice", letter: "j", symbol: "🧃" },
+      { word: "kite", letter: "k", symbol: "🪁" },
+      { word: "lion", letter: "l", symbol: "🦁" },
+      { word: "moon", letter: "m", symbol: "🌙" },
+      { word: "nest", letter: "n", symbol: "🪺" },
+      { word: "orange", letter: "o", symbol: "🍊" },
+      { word: "pig", letter: "p", symbol: "🐷" },
+      { word: "queen", letter: "q", symbol: "👑" },
+      { word: "rain", letter: "r", symbol: "🌧️" },
+      { word: "sun", letter: "s", symbol: "☀️" },
+      { word: "tree", letter: "t", symbol: "🌳" },
+      { word: "umbrella", letter: "u", symbol: "☂️" },
+      { word: "van", letter: "v", symbol: "🚐" },
+      { word: "whale", letter: "w", symbol: "🐋" },
+      { word: "xylophone", letter: "x", symbol: "🎼" },
+      { word: "yarn", letter: "y", symbol: "🧶" },
+      { word: "zebra", letter: "z", symbol: "🦓" }
+    ];
+
+    const wordSet2 = wordSet1.map(item => ({ ...item }));
     const combinedList = [...wordSet1, ...wordSet2];
     const validWordList = [];
     let current = 0;
@@ -172,8 +200,12 @@
           img.src = url;
         }
       }
-      if (validWordList.length) loadWord(0);
-      else feedbackEl.textContent = "⚠️ No images loaded.";
+      const checkReady = setInterval(() => {
+        if (validWordList.length > 0) {
+          clearInterval(checkReady);
+          loadWord(0);
+        }
+      }, 500);
     }
 
     preload();
