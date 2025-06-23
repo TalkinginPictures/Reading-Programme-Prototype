@@ -21,9 +21,6 @@
     .toggle-speech {
       font-size: 14px;
     }
-    .word-display {
-      margin-bottom: 10px;
-    }
     .word-display .uppercase-word {
       font-size: 36px;
       font-weight: bold;
@@ -41,7 +38,7 @@
     .initial-letter.incorrect {
       color: red;
     }
-    img#image {
+    #image {
       width: 200px;
       height: 200px;
       margin-bottom: 10px;
@@ -70,80 +67,37 @@
       font-size: 64px;
       height: 80px;
     }
-    #resultsScreen {
-      display: none;
-      background: #e0ffe0;
-      padding: 30px;
-      border-radius: 8px;
-    }
-    #resultsScreen h2 {
-      font-size: 28px;
-    }
-    #summaryBox {
-      font-family: monospace;
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 15px;
-      margin: 20px auto;
-      width: 80%;
-      white-space: pre-wrap;
-      text-align: left;
-    }
-    .result-buttons button {
-      font-size: 18px;
-      padding: 10px 20px;
-      margin: 10px;
-    }
   </style>
 </head>
 <body>
-  <!-- Logo -->
   <a href="https://www.talkinginpictures.co.uk" class="logo-link" target="_blank">
     <img src="https://www.talkinginpictures.co.uk/tip-logo.png" alt="Talking In Pictures Logo">
   </a>
 
-  <!-- Speech Toggle -->
   <div class="controls">
     <label class="toggle-speech">
       <input type="checkbox" id="speechToggle" checked> Enable speech prompts
     </label>
   </div>
 
-  <!-- Main Content -->
-  <div id="mainGame">
-    <div class="word-display" id="wordDisplay">
-      <div class="uppercase-word"></div>
-      <div class="lowercase-word"></div>
-    </div>
-    <div class="initial-letter" id="initialLetter"></div>
-    <img id="image" src="" alt="Word image" />
-    <div class="prompt" id="prompt">&nbsp;</div>
-    <input type="text" id="answer" maxlength="1" autofocus autocomplete="off" />
-    <div class="feedback" id="feedback"></div>
-    <div class="symbol-output" id="symbol"></div>
+  <div class="word-display" id="wordDisplay">
+    <div class="uppercase-word"></div>
+    <div class="lowercase-word"></div>
   </div>
-
-  <!-- Results Screen -->
-  <div id="resultsScreen">
-    <h2>🎉 Congratulations! You've completed the game!</h2>
-    <div id="summaryBox"></div>
-    <div class="result-buttons">
-      <button onclick="restartGame()">🔁 Play Again</button>
-      <button onclick="goToNextLevel()">➡️ Next Level</button>
-    </div>
-  </div>
+  <div class="initial-letter" id="initialLetter"></div>
+  <img id="image" src="" alt="Word image" />
+  <div class="prompt" id="prompt">&nbsp;</div>
+  <input type="text" id="answer" maxlength="1" autofocus autocomplete="off" />
+  <div class="feedback" id="feedback"></div>
+  <div class="symbol-output" id="symbol"></div>
 
   <script>
-    const wordSet1 = [...]; // same as before
-    const wordSet2 = [...]; // same as before
+    const wordSet1 = [...]; // add actual words here
+    const wordSet2 = [...];
     const combinedList = [...wordSet1, ...wordSet2];
     const validWordList = [];
     let current = 0;
-    let correctCount = 0;
-    let wrongCount = 0;
-    const startTime = Date.now();
 
-    // DOM refs (same as before)
     const imageEl = document.getElementById("image");
     const feedbackEl = document.getElementById("feedback");
     const answerEl = document.getElementById("answer");
@@ -154,9 +108,6 @@
     const initialEl = document.getElementById("initialLetter");
     const promptEl = document.getElementById("prompt");
     const speechToggle = document.getElementById("speechToggle");
-    const mainGame = document.getElementById("mainGame");
-    const resultsScreen = document.getElementById("resultsScreen");
-    const summaryBox = document.getElementById("summaryBox");
 
     function updateDisplays(word, incorrect = false) {
       uppercaseEl.textContent = word.toUpperCase();
@@ -174,7 +125,7 @@
     }
 
     function loadWord(index) {
-      if (index >= validWordList.length) return showResults();
+      if (index >= validWordList.length) index = 0;
       const { word } = validWordList[index];
       updateDisplays(word);
       imageEl.src = validWordList[index].image;
@@ -189,35 +140,17 @@
       const entry = validWordList[current];
       const typed = answerEl.value.toLowerCase();
       if (typed === entry.letter) {
-        correctCount++;
         feedbackEl.textContent = "✅ Well done!";
         symbolEl.textContent = entry.symbol + " = " + entry.word;
         setTimeout(() => {
-          current++;
+          current = (current + 1) % validWordList.length;
           loadWord(current);
         }, 1500);
       } else {
-        wrongCount++;
         feedbackEl.textContent = "❌ Try again";
         updateDisplays(entry.word, true);
       }
     });
-
-    function showResults() {
-      const totalTime = Math.round((Date.now() - startTime) / 1000);
-      const accuracy = Math.round((correctCount / (correctCount + wrongCount)) * 100);
-      summaryBox.textContent = `Score Summary:\nCorrect: ${correctCount}\nMistakes: ${wrongCount}\nAccuracy: ${accuracy}%\nTime: ${totalTime} seconds`;
-      mainGame.style.display = "none";
-      resultsScreen.style.display = "block";
-    }
-
-    function restartGame() {
-      window.location.reload();
-    }
-
-    function goToNextLevel() {
-      window.location.href = "next-level.html"; // placeholder
-    }
 
     async function fetchARASAAC(word) {
       const url = `https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(word)}`;
